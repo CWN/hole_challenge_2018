@@ -1,15 +1,6 @@
 'use strict';
 /*jslint node:true*/
 
-// удалить перед публикацией
-let nodeUtil = require('util');
-
-function var_dump(variable) {
-    console.log(nodeUtil.inspect(variable, {showHidden: true, depth: null, colors: true}));
-}
-
-///======
-
 module.exports = class Agent {
     constructor(me, counts, values, max_rounds, log) {
         this.counts = counts;
@@ -17,12 +8,9 @@ module.exports = class Agent {
         this.rounds = max_rounds;
         this.max_rounds = max_rounds;
 
-        this.minOfferSize = 0.6;
-        this.stepsBeforMinOffer = max_rounds-1; // > 2 ? max_rounds - 2 : max_rounds;
+        this.minOfferSize = 0.5;
+        this.stepsBeforMinOffer = max_rounds - 1;
         this.discountStep = (1 - this.minOfferSize) / this.stepsBeforMinOffer;
-
-        log(`counts: ${counts}`);
-        log(`values: ${values}`);
 
         this.log = log;
         this.total = 0;
@@ -33,11 +21,10 @@ module.exports = class Agent {
             let itemValue = counts[i] * values[i];
             this.total += itemValue;
             this.itemCounts += counts[i];
-            this.itemsValues.push({id: i, value: values[i]}); // itemValue});
+            this.itemsValues.push({id: i, value: values[i]});
         }
 
-        //var_dump(this.itemsValues);
-
+        // более дорогие предметы кладем раньше
         this.itemsValues.sort(function (a, b) {
             if (a.value > b.value) {
                 return -1;
@@ -47,7 +34,6 @@ module.exports = class Agent {
             }
             return 0;
         });
-        var_dump(this.itemsValues);
 
         this.items = new Array(this.itemCounts);
         this.itemsPosition = new Array(this.itemCounts);
@@ -61,31 +47,8 @@ module.exports = class Agent {
             }
         }
 
-        /*
-        let k = 0;
-        for (let i = 0; i < counts.length; i++) {
-            for (let j = 0; j < counts[i]; j++) {
-                this.items[k] = values[i];
-                this.itemsPosition[k] = i;
-                k++;
-            }
-        } */
-
-        var_dump(this.items);
-
         this.matrix = this.knapsack();
-
-        var_dump(this.matrix);
-
         this.currentOffer = [];
-        /* let w = this.total;
-         // let i = totalCounts;
-         this.findItemsInKnapsack(w - 3, this.itemCounts);
-         var_dump(this.currentOffer);
-
-         for (let i = 0; i < this.currentOffer.length; i++) {
-             var_dump(this.items[this.currentOffer[i]]);
-         }*/
     }
 
     // задача о рюкзаке. Заполняем матрицу загрузки рюкзака методом динамического программирования
@@ -122,10 +85,6 @@ module.exports = class Agent {
 
     // вытаскиваем предметы из рюкзака на заданную стоимость
     findItemsInKnapsack(w, i) {
-        // var_dump(w);
-        // var_dump(i);
-        // var_dump(this.matrix[w][i]);
-
         if (0 === this.matrix[w][i]) {
             return undefined;
         }
@@ -151,17 +110,12 @@ module.exports = class Agent {
     ourOffer(acceptableOfferSum) {
         this.currentOffer = [];
         this.findItemsInKnapsack(this.getCurrentRealSum(Math.round(acceptableOfferSum)), this.itemCounts);
-        var_dump(this.currentOffer);
 
         let offer = new Array(this.counts.length).fill(0);
-        var_dump(offer);
 
         for (let i = 0; i < this.currentOffer.length; i++) {
-            var_dump(this.items[this.currentOffer[i]]);
             offer[this.itemsPosition[this.currentOffer[i]]]++;
         }
-
-        var_dump(offer);
         return offer;
     }
 
@@ -187,11 +141,11 @@ module.exports = class Agent {
 
     offer(o) {
         this.log(`${this.rounds} rounds left`);
-        this.log(`their offer ${o}`);
+        //this.log(`their offer ${o}`);
         this.rounds--;
 
         let acceptableOfferSum = this.currentAcceptableOffer();
-        this.log(`Current acceptable offer : ${acceptableOfferSum}`);
+        //this.log(`Current acceptable offer : ${acceptableOfferSum}`);
 
         if (o) {
             let sum = this.sum_offer(o);
@@ -201,7 +155,7 @@ module.exports = class Agent {
 
         o = this.ourOffer(acceptableOfferSum);
 
-        this.log(`my offer: ${o}`);
+        //this.log(`my offer: ${o}`);
         return o;
     }
 };
