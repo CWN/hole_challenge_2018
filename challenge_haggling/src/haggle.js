@@ -43,7 +43,7 @@ Human vs. remote agent:
 Script vs. remote agent:
   node haggle.js [OPTION...] SCRIPT URL`);
 
-const REQUIRED_NODE_VERSION = 'v10.5.0';
+const REQUIRED_NODE_VERSION = 'v10.4.1';
 
 function die(msg){
     console.error(msg);
